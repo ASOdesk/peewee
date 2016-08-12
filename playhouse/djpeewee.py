@@ -5,6 +5,7 @@ from functools import partial
 import logging
 
 from peewee import *
+from playhouse.postgres_ext import *
 
 logger = logging.getLogger('peewee.playhouse.djpeewee')
 
@@ -18,6 +19,7 @@ class DjangoTranslator(object):
 
     def get_django_field_map(self):
         from django.db.models import fields as djf
+        from django.contrib.postgres import fields as djpgf
         return [
             (djf.AutoField, PrimaryKeyField),
             (djf.BigIntegerField, BigIntegerField),
@@ -34,6 +36,8 @@ class DjangoTranslator(object):
             (djf.TextField, TextField),
             (djf.TimeField, TimeField),
             (djf.related.ForeignKey, ForeignKeyField),
+            (djpgf.JSONField, BinaryJSONField),
+            (djpgf.ArrayField, ArrayField),
         ]
 
     def convert_field(self, field):
