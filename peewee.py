@@ -681,6 +681,9 @@ class Expression(Node):
         self.rhs = rhs
         self.flat = flat
 
+    def __str__(self):
+        return '{} {} {}'.format(self.lhs, self.op, self.rhs)
+
     def clone_base(self):
         return Expression(self.lhs, self.op, self.rhs, self.flat)
 
@@ -1956,11 +1959,11 @@ class QueryCompiler(object):
             select_clause = Clause(*query._select)
             select_clause.glue = ', '
 
-            clauses.extend((select_clause, SQL('FROM')))
+            clauses.append(select_clause)
             if query._from is None:
-                clauses.append(model.as_entity().alias(alias_map[model]))
-            else:
-                clauses.append(CommaClause(*query._from))
+                clauses.extend((SQL('FROM'), model.as_entity().alias(alias_map[model])))
+            elif query._from:
+                clauses.extend((SQL('FROM'), CommaClause(*query._from)))
 
         join_clauses = self.generate_joins(query._joins, model, alias_map)
         if join_clauses:
@@ -3035,7 +3038,7 @@ class SelectQuery(Query):
 
     @returns_clone
     def from_(self, *args):
-        self._from = list(args) if args else None
+        self._from = list(args)
 
     @returns_clone
     def group_by(self, *args, **kwargs):
@@ -4484,6 +4487,9 @@ class FieldProxy(Field):
         if attr == 'model_class':
             return self._model_alias
         return getattr(self.field_instance, attr)
+
+    def __getitem__(self, key):
+        return self.field_instance[key]
 
 class ModelAlias(object):
     def __init__(self, model_class):
