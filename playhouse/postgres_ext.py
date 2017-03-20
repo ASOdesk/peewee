@@ -274,6 +274,10 @@ def Match(field, query, language=None):
         fn.to_tsquery(*params))
 
 
+class IntervalField(Field):
+    db_field = 'interval'
+
+
 OP.update(
     HKEY='key',
     HUPDATE='H@>',

@@ -38,6 +38,7 @@ class DjangoTranslator(object):
             (djf.related.ForeignKey, ForeignKeyField),
             (djpgf.JSONField, BinaryJSONField),
             (djpgf.ArrayField, ArrayField),
+            (djf.DurationField, IntervalField),
         ]
 
     def convert_field(self, field):
