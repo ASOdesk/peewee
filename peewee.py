@@ -1962,6 +1962,8 @@ class QueryCompiler(object):
             clauses.append(select_clause)
             if query._from is None:
                 clauses.extend((SQL('FROM'), model.as_entity().alias(alias_map[model])))
+                if query._tablesample:
+                    clauses.append(Func('TABLESAMPLE SYSTEM', query._tablesample))
             elif query._from:
                 clauses.extend((SQL('FROM'), CommaClause(*query._from)))
 
@@ -2977,6 +2979,7 @@ class SelectQuery(Query):
         self._aggregate_rows = False
         self._alias = None
         self._qr = None
+        self._tablesample = None
 
     def _clone_attributes(self, query):
         query = super(SelectQuery, self)._clone_attributes(query)
@@ -3006,6 +3009,7 @@ class SelectQuery(Query):
         query._dicts = self._dicts
         query._aggregate_rows = self._aggregate_rows
         query._alias = self._alias
+        query._tablesample = self._tablesample
         return query
 
     def compound_op(operator):
@@ -3026,6 +3030,10 @@ class SelectQuery(Query):
         wrapped_rhs = self.model_class.select(SQL('*')).from_(
             EnclosedClause((self & rhs)).alias('_')).order_by()
         return (self | rhs) - wrapped_rhs
+
+    @returns_clone
+    def tablesample(self, tablesample):
+        self._tablesample = tablesample
 
     def union_all(self, rhs):
         return SelectQuery._compound_op_static('UNION ALL')(self, rhs)
